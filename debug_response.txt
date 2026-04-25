@@ -1,0 +1,39 @@
+```json
+{
+  "primary": {
+    "common_name": "Neem",
+    "scientific_name": "Azadirachta indica",
+    "kannada_name": "Bevu",
+    "why_recommended": "This native tree is ideal for Koramangala's climate and red laterite soil due to its exceptional hardiness and adaptability. Its dense, wide-spreading canopy provides superior shade, significantly maximizing urban cooling, while its prolific flowers and fruits are a vital food source for local birds and pollinators, greatly enhancing biodiversity within the 15.5 m² planting area.",
+    "expected_canopy_spread_m": 7.0,
+    "water_requirement": "Low",
+    "growth_rate": "Moderate",
+    "co2_absorption_kg_per_year": 22.0,
+    "rotary_focus": "Environment"
+  },
+  "alternatives": [
+    {
+      "common_name": "Honge",
+      "scientific_name": "Pongamia pinnata",
+      "kannada_name": "Honge",
+      "why_recommended": "This hardy native tree thrives in red laterite soils, offering a dense canopy for significant urban cooling. Its nitrogen-fixing properties also improve soil health, and its flowers support local pollinators, contributing to biodiversity.",
+      "expected_canopy_spread_m": 6.0,
+      "water_requirement": "Low",
+      "growth_rate": "Moderate",
+      "co2_absorption_kg_per_year": 18.0,
+      "rotary_focus": "Environment"
+    },
+    {
+      "common_name": "Jamun",
+      "scientific_name": "Syzygium cumini",
+      "kannada_name": "Nerale",
+      "why_recommended": "An evergreen native, Jamun provides year-round shade for effective urban cooling and adapts well to laterite soils. Its fruits are a favorite food for birds and bats, making it excellent for local biodiversity.",
+      "expected_canopy_spread_m": 6.5,
+      "water_requirement": "Medium",
+      "growth_rate": "Moderate",
+      "co2_absorption_kg_per_year": 17.0,
+      "rotary_focus": "Environment"
+    }
+  ]
+}
+```

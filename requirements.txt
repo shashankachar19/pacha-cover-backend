@@ -1,0 +1,52 @@
+# ============================================================
+# Pacha (Green) Cover — requirements.txt  (v1.1 — Extended Features)
+# FastAPI + Google Cloud Ecosystem
+# ============================================================
+
+# Web Framework
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+python-multipart==0.0.9
+
+# Google Cloud Core
+google-cloud-firestore==2.16.0
+google-cloud-storage==2.16.0
+google-auth==2.29.0
+google-auth-httplib2==0.2.0
+
+# Gemini AI + Vertex AI
+google-generativeai==0.5.4
+google-cloud-aiplatform==1.51.0
+
+# Google Earth Engine
+earthengine-api==0.1.394
+
+# Firebase Admin
+firebase-admin==6.5.0
+
+# Feature 4: Bhasha Voice Interface
+google-cloud-speech==2.26.0
+google-cloud-translate==3.15.3
+google-cloud-texttospeech==2.16.3
+
+# Feature 2: Green Corridor GeoJSON export
+geojson==3.1.0
+
+# Data Validation & Settings
+pydantic==2.7.1
+pydantic-settings==2.2.1
+
+# HTTP & Async
+httpx==0.27.0
+aiofiles==23.2.1
+
+# Utilities
+python-jose[cryptography]==3.3.0
+Pillow==10.3.0
+python-dotenv==1.0.1
+structlog==24.1.0
+tenacity==8.3.0
+
+# Testing
+pytest==8.2.0
+pytest-asyncio==0.23.7
