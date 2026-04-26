@@ -227,9 +227,15 @@ class GeminiService:
             safety_settings=_safety_settings,
         )
 
-        credentials = service_account.Credentials.from_service_account_file(
-            self._settings.firebase_service_account_path
-        )
+        if self._settings.firebase_service_account_json:
+            import json
+            key_dict = json.loads(self._settings.firebase_service_account_json)
+            credentials = service_account.Credentials.from_service_account_info(key_dict)
+        else:
+            credentials = service_account.Credentials.from_service_account_file(
+                self._settings.firebase_service_account_path
+            )
+
         self._gcs_client = storage.Client(
             project=self._settings.gcp_project_id,
             credentials=credentials
