@@ -81,7 +81,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="Pacha Cover API",
         description=(
-            "🌿 **Pacha (Green) Cover** — AI-powered urban canopy restorer for Bengaluru.\n\n"
+            "**Pacha (Green) Cover** — AI-powered urban canopy restorer for Bengaluru.\n\n"
             "Built for the **Build for Bengaluru** hackathon.\n\n"
             "### Core Features\n"
             "- **Heat Map** — Ward-level NDVI & Land Surface Temperature from Google Earth Engine\n"
@@ -161,6 +161,18 @@ def create_app() -> FastAPI:
     # ── Routes ─────────────────────────────────────────────────────────────
     app.include_router(api_router)
 
+    # ── Static Files (React Frontend) ──────────────────────────────────────
+    # Mount the 'static' directory to serve the compiled React app.
+    # html=True ensures that / serves index.html automatically.
+    from fastapi.staticfiles import StaticFiles
+    import os
+
+    static_path = "static"
+    if os.path.exists(static_path):
+        app.mount("/", StaticFiles(directory=static_path, html=True), name="static")
+    else:
+        log.warning("pacha_cover.static_missing", path=static_path)
+
     # ── Health Check (required by Cloud Run / load balancer) ──────────────
     @app.get(
         "/health",
@@ -182,7 +194,7 @@ def create_app() -> FastAPI:
     @app.get("/", tags=["Infrastructure"], include_in_schema=False)
     async def root():
         return {
-            "message": "🌿 Pacha Cover API v1.1 is running. Visit /docs for the API reference.",
+            "message": "Pacha Cover API v1.1 is running. Visit /docs for the API reference.",
             "docs": "/docs",
         }
 

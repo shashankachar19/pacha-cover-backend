@@ -28,6 +28,7 @@ class Collections:
     USERS = "users"
     ADOPTED_SPOTS = "adopted_spots"
     VERIFICATIONS = "verifications"
+    COMMUNITIES = "communities"
     WARD_HEAT_DATA = "ward_heat_data"
     LEADERBOARD = "leaderboard"
     # ── Feature 1: AR metadata (static catalogue, rarely written) ─────────────
@@ -59,6 +60,7 @@ class FirestoreFields:
     LAST_UPDATED = "last_updated"
     COORDINATES = "coordinates"          # GeoPoint — used for geospatial queries
     SPECIES_COMMON_NAME = "species_common_name"
+    SPOT_NAME = "spot_name"
 
     # ── ward_heat_data ─────────────────────────────────────────────────────────
     HEAT_RISK_SCORE = "heat_risk_score"
@@ -68,6 +70,16 @@ class FirestoreFields:
     # Feature 2: corridor status written back to the ward document
     CORRIDOR_STATUS = "corridor_status"
     CORRIDOR_ID = "corridor_id"
+
+    # communities
+    COMMUNITY_ID = "community_id"
+    GOAL_TYPE = "goal_type"
+    TARGET_VALUE = "target_value"
+    CURRENT_VALUE = "current_value"
+    MEMBERS = "members"
+    GEOFENCE = "geofence"
+    CENTER = "center"
+    RADIUS_KM = "radius_km"
 
     # ── green_corridors ────────────────────────────────────────────────────────
     CENTRE_COORDINATES = "centre_coordinates"

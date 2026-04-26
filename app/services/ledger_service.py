@@ -118,7 +118,7 @@ class LedgerService:
 
         # Increment user's total_trees_adopted
         user_ref = self._db.collection(Collections.USERS).document(user_id)
-        batch.update(
+        batch.set(
             user_ref,
             {
                 FirestoreFields.TOTAL_TREES_ADOPTED:
@@ -126,6 +126,7 @@ class LedgerService:
                 FirestoreFields.TOTAL_GREEN_POINTS:
                     _firestore_increment(10),  # Points for pledging
             },
+            merge=True
         )
 
         # Increment ward's adopted_spots_count
@@ -133,9 +134,10 @@ class LedgerService:
             self._db.collection(Collections.WARD_HEAT_DATA)
             .document(_ward_id_from_name(payload.ward_name))
         )
-        batch.update(
+        batch.set(
             ward_ref,
             {FirestoreFields.ADOPTED_SPOTS_COUNT: _firestore_increment(1)},
+            merge=True,
         )
 
         await batch.commit()
@@ -213,6 +215,29 @@ class LedgerService:
         async for doc in query.stream():
             results.append(_doc_to_adopt_spot(doc.id, doc.to_dict()))
 
+        return results
+
+    async def get_leaderboard(self, limit: int = 10) -> list[dict]:
+        """
+        Fetch top users by total_green_points.
+        Used by the Profile page to show city-wide or ward-level rankings.
+        """
+        query = (
+            self._db.collection(Collections.USERS)
+            .order_by(FirestoreFields.TOTAL_GREEN_POINTS, direction="DESCENDING")
+            .limit(limit)
+        )
+        
+        results = []
+        async for doc in query.stream():
+            data = doc.to_dict() or {}
+            results.append({
+                "uid": doc.id,
+                "name": data.get("name", "Unknown User"),
+                "email": data.get("email", ""),
+                "total_green_points": data.get(FirestoreFields.TOTAL_GREEN_POINTS, 0),
+                "picture": data.get("picture", "")
+            })
         return results
 
     async def get_ward_adoption_counts(self) -> dict[str, int]:
@@ -314,7 +339,7 @@ class LedgerService:
         )
 
         user_ref = self._db.collection(Collections.USERS).document(user_id)
-        batch.update(
+        batch.set(
             user_ref,
             {
                 FirestoreFields.TOTAL_GREEN_POINTS:
@@ -322,6 +347,7 @@ class LedgerService:
                 FirestoreFields.TOTAL_TREES_VERIFIED:
                     _firestore_increment(1),
             },
+            merge=True
         )
 
         # Store the verification record for audit trail
@@ -353,8 +379,8 @@ class LedgerService:
 
 def _firestore_increment(n: int):
     """Returns a Firestore SERVER_TIMESTAMP-style atomic increment."""
-    from google.cloud.firestore_v1.transforms import INCREMENT
-    return INCREMENT(n)
+    from google.cloud.firestore_v1.transforms import Increment
+    return Increment(n)
 
 
 def _where(field: str, op: str, value):

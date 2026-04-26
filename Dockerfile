@@ -1,42 +1,31 @@
 # ============================================================
-# Dockerfile — Pacha Cover API v1.1
-# Optimised for Google Cloud Run (asia-south1)
-#
-# Multi-stage build:
-#   Stage 1 (builder) — installs dependencies in a venv
-#   Stage 2 (runtime) — copies only the venv + app code
-#   Result: ~250MB image vs ~900MB naive build
+# Dockerfile — Pacha Cover Unified (Frontend + Backend)
+# Optimised for Google Cloud Run
 # ============================================================
 
-# ── Stage 1: Builder ───────────────────────────────────────────────────────────
-FROM python:3.12-slim AS builder
+# ── Stage 1: Frontend Builder ──────────────────────────────────────────────────
+FROM node:20-slim AS frontend-builder
+WORKDIR /build-frontend
+COPY frontend/package*.json ./
+RUN npm install
+COPY frontend/ .
+# Note: Ensure VITE_ API URLs are handled if not using relative paths
+RUN npm run build
 
-# Prevents Python from writing .pyc files and enables stdout/stderr logging
+# ── Stage 2: Backend Builder ───────────────────────────────────────────────────
+FROM python:3.12-slim AS backend-builder
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
-
-WORKDIR /build
-
-# Install build tools needed for some C extensions (e.g. grpcio)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    libssl-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create and activate a virtual environment
+    PIP_NO_CACHE_DIR=1
+WORKDIR /build-backend
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
-
-# Install Python dependencies (layer-cached unless requirements.txt changes)
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-
-# ── Stage 2: Runtime ───────────────────────────────────────────────────────────
+# ── Stage 3: Runtime ───────────────────────────────────────────────────────────
 FROM python:3.12-slim AS runtime
-
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PATH="/opt/venv/bin:$PATH" \
@@ -44,13 +33,19 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Copy the venv from the builder stage (no build tools needed at runtime)
-COPY --from=builder /opt/venv /opt/venv
+# Copy virtualenv from backend-builder
+COPY --from=backend-builder /opt/venv /opt/venv
 
-# Copy application source code
+# Copy backend source
 COPY app/ ./app/
 
-# Cloud Run sets PORT env var — uvicorn reads it via shell expansion
-# Workers = 4 is suitable for Cloud Run's default 2 vCPU allocation
-CMD ["sh", "-c", \
-     "uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 4 --log-level info"]
+# Copy compiled frontend from frontend-builder to 'static' folder
+COPY --from=frontend-builder /build-frontend/dist ./static
+
+# Optional: Copy service account keys if they are required to be local 
+# (Better to use Secret Manager in production)
+COPY serviceAccountKey.json .
+COPY gee_key.json .
+
+# Cloud Run sets PORT env var automatically
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 4"]

@@ -112,6 +112,24 @@ async def list_my_spots(
     return spots
 
 
+# ── GET /ledger/leaderboard ───────────────────────────────────────────────────
+
+@router.get(
+    "/leaderboard",
+    summary="Get top users by Green Points",
+)
+async def get_leaderboard(
+    limit: int = Query(default=5, ge=1, le=20),
+    db=Depends(get_firestore_client),
+) -> list[dict]:
+    """
+    Returns the top citizens ranked by their total Green Points.
+    Used for the ward/city-wide leaderboard on the Profile page.
+    """
+    ledger = LedgerService(db)
+    return await ledger.get_leaderboard(limit=limit)
+
+
 # ── GET /ledger/community ──────────────────────────────────────────────────────
 
 @router.get(

@@ -102,8 +102,13 @@ Return a JSON object with this exact structure:
 Note: 'status' MUST be exactly either "approved" or "rejected".
 """
 
-def _build_user_prompt(req: PrescriptionRequest) -> str:
-    """Construct the user-facing part of the Gemini prompt."""
+def _build_user_prompt(req: PrescriptionRequest, site_health: dict | None = None) -> str:
+    """Construct the user-facing part of the Gemini prompt.
+    
+    When site_health is provided (from SoilHealthService.get_site_health()),
+    the prompt is significantly enriched with satellite NDVI, LST, and
+    soil chemistry data for a more precise recommendation.
+    """
     parts = [
         f"Location: {req.coordinates.latitude:.4f}°N, "
         f"{req.coordinates.longitude:.4f}°E",
@@ -114,16 +119,43 @@ def _build_user_prompt(req: PrescriptionRequest) -> str:
     if req.nearby_land_use:
         parts.append(f"Nearby land use: {req.nearby_land_use}")
     if req.soil_type:
-        parts.append(f"Soil type: {req.soil_type}")
+        parts.append(f"Soil type (user-reported): {req.soil_type}")
     if req.plot_area_sqm:
         parts.append(f"Available planting area: {req.plot_area_sqm} m²")
+
+    # ── Inject satellite + soil health data if available ─────
+    if site_health:
+        parts.append("\n--- Satellite & Soil Analysis (Google Earth Engine + Soil Health Card) ---")
+        parts.append(f"NDVI (vegetation index): {site_health['ndvi']} "
+                     f"(0=bare soil, 1=dense vegetation)")
+        parts.append(f"Land Surface Temperature: {site_health['lst_celsius']}°C")
+        parts.append(f"Vegetation Cover: {site_health['vegetation_cover_pct']}%")
+        parts.append(f"Heat Stress Level: {site_health['heat_stress']}")
+
+        soil = site_health.get("soil", {})
+        if soil:
+            parts.append(f"Soil Zone: {soil.get('zone', 'unknown')} Bengaluru")
+            parts.append(f"Soil pH: {soil.get('pH', 'N/A')} "
+                         f"({'acidic' if (soil.get('pH') or 7) < 6.5 else 'neutral' if (soil.get('pH') or 7) < 7.5 else 'alkaline'})")
+            parts.append(f"Soil Texture: {soil.get('texture', 'N/A')}")
+            parts.append(f"Organic Carbon: {soil.get('organic_carbon_pct', 'N/A')}% "
+                         f"({'low' if (soil.get('organic_carbon_pct') or 0.5) < 0.5 else 'medium' if (soil.get('organic_carbon_pct') or 0.5) < 0.75 else 'high'})")
+            parts.append(f"Available Nitrogen: {soil.get('nitrogen_kg_ha', 'N/A')} kg/ha")
+            parts.append(f"Available Phosphorus: {soil.get('phosphorus_kg_ha', 'N/A')} kg/ha")
+            parts.append(f"Available Potassium: {soil.get('potassium_kg_ha', 'N/A')} kg/ha")
+            parts.append(f"Soil Health Index: {soil.get('soil_health_index', 'N/A')}/100")
+        parts.append(f"Data Source: {site_health.get('data_source', 'N/A')}")
+        parts.append("--- End of Satellite Data ---\n")
 
     context = "\n".join(parts)
 
     return (
         f"Given the following location context:\n{context}\n\n"
-        "Recommend the SINGLE BEST native tree species and TWO alternatives "
-        "for planting here to maximise urban cooling and biodiversity.\n\n"
+        "Use ALL the provided satellite and soil data above to recommend "
+        "the SINGLE BEST native tree species and TWO alternatives "
+        "for planting here to maximise urban cooling and biodiversity. "
+        "Specifically explain how the soil pH, organic carbon, and NDVI "
+        "influenced your recommendation.\n\n"
         f"{_SPECIES_SCHEMA}"
     )
 
@@ -241,18 +273,21 @@ class GeminiService:
     )
 
     async def prescribe_species(
-        self, request: PrescriptionRequest
+        self, request: PrescriptionRequest, site_health: dict | None = None
     ) -> tuple[TreeSpecies, list[TreeSpecies]]:
         """
-        Call Gemini 1.5 Pro and return primary + alternative tree species.
+        Call Gemini 2.5 Flash and return primary + alternative tree species.
+        Accepts optional site_health from SoilHealthService.get_site_health()
+        to enrich the prompt with NDVI, LST, and soil parameters.
         """
-        prompt = _build_user_prompt(request)
+        prompt = _build_user_prompt(request, site_health=site_health)
 
         log.info(
             "gemini.prescribing",
             lat=request.coordinates.latitude,
             lng=request.coordinates.longitude,
             ward=request.ward_name,
+            enriched=site_health is not None,
         )
 
         import asyncio
@@ -279,16 +314,13 @@ class GeminiService:
         self, image_bytes: bytes, spot_id: str, content_type: str = "image/jpeg"
     ) -> dict:
         """
-        Full verification pipeline using Gemini 1.5 Pro Vision:
-          1. Upload image to GCS
-          2. Ask Gemini to verify sapling
-          3. Return structured result
+        Verify a sapling image using Gemini Vision.
+        Sends image bytes directly to Gemini (no GCS required for demo).
         """
         import asyncio
         loop = asyncio.get_event_loop()
 
-        # 1. Upload to GCS
-        gcs_uri = await self.upload_image_to_gcs(image_bytes, spot_id, content_type)
+        # Send bytes directly — skip GCS upload
         
         # 2. Call Gemini Vision
         image_part = {
@@ -334,6 +366,6 @@ class GeminiService:
             "status": status_enum,
             "confidence_score": confidence,
             "detected_labels": labels,
-            "gcs_uri": gcs_uri,
+            "gcs_uri": None,
             "message": message,
         }

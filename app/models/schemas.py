@@ -127,6 +127,8 @@ class PrescriptionResponse(BaseModel):
     primary_recommendation: TreeSpecies
     alternative_recommendations: list[TreeSpecies] = []
     gemini_model_used: str
+    # Soil & satellite data auto-detected by SoilHealthService
+    soil_analysis: dict | None = None
     disclaimer: str = (
         "Recommendations are AI-generated. Consult a local horticulturist "
         "for site-specific advice."
@@ -212,6 +214,11 @@ class VerificationResult(BaseModel):
     detected_labels: list[str] = []
     # Points awarded (0 if rejected)
     green_points_awarded: int = 0
+    # Community aggregation details
+    community_matched_count: int = 0
+    community_matched_ids: list[str] = []
+    # one of: updated | no_match | skipped_not_approved | failed
+    community_update_status: str | None = None
     message: str
     verified_at: datetime = Field(default_factory=datetime.utcnow)
     # GCS URI of the uploaded image
@@ -324,6 +331,38 @@ class CorridorAuditResult(BaseModel):
     badges_awarded: int
     corridors: list[GreenCorridor]
     audit_duration_seconds: float
+
+
+class CommunityGoalType(str, Enum):
+    TREE_COUNT = "tree_count"
+
+
+class CommunityGeofence(BaseModel):
+    center: Coordinates
+    radius_km: float = Field(..., gt=0)
+
+
+class CommunityProgressOut(BaseModel):
+    community_id: str
+    ward_name: str | None = None
+    goal_type: CommunityGoalType
+    target_value: int = Field(..., ge=1)
+    current_value: int = Field(default=0, ge=0)
+    members_count: int = Field(default=0, ge=0)
+    geofence: CommunityGeofence
+    progress_percent: float = Field(..., ge=0, le=100)
+    target_reached: bool = False
+    last_updated: datetime | None = None
+
+
+class CommunityLeaderboardEntry(BaseModel):
+    rank: int = Field(..., ge=1)
+    community_id: str
+    ward_name: str | None = None
+    current_value: int = Field(default=0, ge=0)
+    target_value: int = Field(..., ge=1)
+    progress_percent: float = Field(..., ge=0, le=100)
+    members_count: int = Field(default=0, ge=0)
 
 
 # ══════════════════════════════════════════════════════════════════════════════

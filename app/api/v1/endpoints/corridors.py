@@ -43,7 +43,7 @@ log = get_logger(__name__)
         "Scans all verified adopted spots across Bengaluru, detects "
         "geospatial clusters using Haversine distance, promotes qualifying "
         "clusters (≥5 trees within 100m) to Active Green Corridors, and "
-        "awards the **Corridor Creator 🌳** badge + 200 Green Points to "
+        "awards the **Corridor Creator** badge + 200 Green Points to "
         "all contributing planters.\n\n"
         "This endpoint is idempotent — badges are only awarded once per user "
         "regardless of how many times the audit runs.\n\n"

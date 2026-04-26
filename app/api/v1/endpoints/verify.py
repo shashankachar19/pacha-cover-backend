@@ -45,6 +45,7 @@ from app.models.schemas import (
 )
 from app.services.ledger_service import LedgerService
 from app.services.gemini_service import GeminiService
+from app.services.community_service import CommunityService
 
 router = APIRouter(prefix="/verify-growth", tags=["Verification Pipeline"])
 log = get_logger(__name__)
@@ -189,6 +190,8 @@ async def verify_growth(
 
     # ── Step 4: Update Firestore if approved ───────────────────────────────
     points_awarded = 0
+    matched_community_ids: list[str] = []
+    community_update_status = "skipped_not_approved"
 
     if ai_result["status"] == VerificationStatus.APPROVED:
         points_awarded = settings.points_per_verification
@@ -203,6 +206,34 @@ async def verify_growth(
                 points_awarded=points_awarded,
                 new_status=new_status,
             )
+            try:
+                community_service = CommunityService(db)
+                matched_community_ids = (
+                    await community_service.update_community_progress(
+                        user_id=uid,
+                        user_location=spot.coordinates,
+                        tree_count=1,
+                    )
+                )
+                community_update_status = (
+                    "updated" if matched_community_ids else "no_match"
+                )
+                log.info(
+                    "verify.community_update_result",
+                    uid=uid,
+                    spot_id=spot_id,
+                    status=community_update_status,
+                    matched_count=len(matched_community_ids),
+                    matched_communities=matched_community_ids,
+                )
+            except Exception as community_exc:
+                community_update_status = "failed"
+                log.error(
+                    "verify.community_update_failed",
+                    uid=uid,
+                    spot_id=spot_id,
+                    error=str(community_exc),
+                )
             log.info(
                 "verify.approved",
                 uid=uid,
@@ -238,6 +269,9 @@ async def verify_growth(
         confidence_score=ai_result["confidence_score"],
         detected_labels=ai_result["detected_labels"],
         green_points_awarded=points_awarded,
+        community_matched_count=len(matched_community_ids),
+        community_matched_ids=matched_community_ids,
+        community_update_status=community_update_status,
         message=ai_result["message"],
         image_gcs_uri=ai_result.get("gcs_uri"),
     )

@@ -12,7 +12,7 @@
 #      qualifies as an Active Green Corridor.
 #   4. Write the corridor document to green_corridors/{corridor_id}.
 #   5. Update the ward_heat_data doc with corridor_status.
-#   6. Award the "Corridor Creator 🌳" badge + bonus Green Points
+#   6. Award the "Corridor Creator" badge + bonus Green Points
 #      to all unique contributors in the cluster — atomically via
 #      Firestore batch writes.
 #
@@ -55,7 +55,7 @@ log = get_logger(__name__)
 UTC = timezone.utc
 
 # Badge name — must match the badge system in functions/main.py
-_CORRIDOR_BADGE = "Corridor Creator 🌳"
+_CORRIDOR_BADGE = "Corridor Creator"
 
 # ── Haversine distance ─────────────────────────────────────────────────────────
 
@@ -340,7 +340,7 @@ class CorridorService:
         self, user_ids: list[str], corridor_id: str
     ) -> int:
         """
-        Awards the "Corridor Creator 🌳" badge and bonus Green Points
+        Awards the "Corridor Creator" badge and bonus Green Points
         to each contributing user who doesn't already have the badge.
 
         Uses array-union so existing badges are preserved.

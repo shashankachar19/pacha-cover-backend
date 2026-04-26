@@ -30,11 +30,13 @@ from app.api.v1.endpoints import (
     ledger,
     prescribe,
     verify,
+    verify_image,
     assets,
     corridors,
     carbon,
     voice,
     auth,
+    communities,
 )
 
 api_router = APIRouter(prefix="/api/v1")
@@ -44,6 +46,7 @@ api_router.include_router(heatmap.router)
 api_router.include_router(prescribe.router)
 api_router.include_router(ledger.router)
 api_router.include_router(verify.router)
+api_router.include_router(verify_image.router)  # stateless demo endpoint
 
 # Extended features (v1.1)
 api_router.include_router(assets.router)
@@ -51,3 +54,4 @@ api_router.include_router(corridors.router)
 api_router.include_router(carbon.router)
 api_router.include_router(voice.router)
 api_router.include_router(auth.router)
+api_router.include_router(communities.router)
