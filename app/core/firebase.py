@@ -32,11 +32,17 @@ def _initialize_firebase() -> firebase_admin.App:
     settings = get_settings()
 
     try:
-        cred = credentials.Certificate(settings.firebase_service_account_path)
+        if settings.firebase_service_account_json:
+            import json
+            key_dict = json.loads(settings.firebase_service_account_json)
+            cred = credentials.Certificate(key_dict)
+        else:
+            cred = credentials.Certificate(settings.firebase_service_account_path)
+
         _firebase_app = firebase_admin.initialize_app(cred, {
             "projectId": settings.gcp_project_id,
         })
-    except (FileNotFoundError, ValueError):
+    except Exception as exc:
         # Fallback: use Application Default Credentials (Cloud Run / GCE)
         _firebase_app = firebase_admin.initialize_app()
 

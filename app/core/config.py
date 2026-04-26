@@ -49,6 +49,7 @@ class Settings(BaseSettings):
 
     # ── Firebase / Firestore ───────────────────────────────────────────────
     firebase_service_account_path: str = "./serviceAccountKey.json"
+    firebase_service_account_json: str | None = None  # Full JSON string
     firestore_database_id: str = "(default)"
 
     # ── Gemini API ─────────────────────────────────────────────────────────
@@ -61,6 +62,7 @@ class Settings(BaseSettings):
     # ── Google Earth Engine ────────────────────────────────────────────────
     gee_service_account: str = ""
     gee_key_file_path: str = "./gee_key.json"
+    gee_key_json_str: str | None = None  # Full JSON string
 
     # ── Google Cloud Storage ───────────────────────────────────────────────
     gcs_bucket_name: str = "pacha-cover-images"

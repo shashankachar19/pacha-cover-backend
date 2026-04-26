@@ -97,10 +97,19 @@ class EarthEngineService:
         try:
             import ee  # earthengine-api
 
-            credentials = ee.ServiceAccountCredentials(
-                self._settings.gee_service_account,
-                self._settings.gee_key_file_path,
-            )
+            if self._settings.gee_key_json_str:
+                import json
+                key_dict = json.loads(self._settings.gee_key_json_str)
+                # Note: ee.ServiceAccountCredentials takes a path or a dict
+                credentials = ee.ServiceAccountCredentials(
+                    self._settings.gee_service_account,
+                    key_data=key_dict,
+                )
+            else:
+                credentials = ee.ServiceAccountCredentials(
+                    self._settings.gee_service_account,
+                    self._settings.gee_key_file_path,
+                )
             ee.Initialize(credentials)
             self._initialized = True
             log.info("earth_engine.initialized")
