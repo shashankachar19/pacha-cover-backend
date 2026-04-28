@@ -302,3 +302,14 @@ gcloud services enable \
 ---
 
 *Built with 💚 for Bengaluru — India's Garden City*
+
+---
+
+## 👥 Meet the Team
+
+Meet the developers behind Pacha Cover:
+
+* **Shashank** — Backend & AI Integration
+* **Mahek Fathima** — Backend & AI Integration
+* **Abdulla Khan** — Frontend Developer
+* **Misbah Anjum G** — Frontend Developer
