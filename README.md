@@ -214,7 +214,7 @@ curl -X POST https://api.pacha-cover.app/api/v1/verify-growth \
 | 50 | 🌿 Urban Gardener |
 | 150 | 🌳 Tree Whisperer |
 | 300 | 💚 Green Guardian |
-| 500 | 🏆 Canopy Champion |
+| 500 | 🏆 Canopy star |
 | 1000 | 🌲 Bengaluru's Forest Hero |
 
 ---
