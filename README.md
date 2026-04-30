@@ -299,12 +299,6 @@ gcloud services enable \
 | **Google Tech** | Gemini, Vertex AI, Firestore, GEE, Cloud Run, Cloud Functions, GCS |
 | **Completeness** | Full backend with auth, AI, storage, CI/CD, tests, and security rules |
 
----
-
-*Built with 💚 for Bengaluru — India's Garden City*
-
----
-
 ## 👥 Meet the Team
 
 Meet the developers behind Pacha Cover:
@@ -313,3 +307,9 @@ Meet the developers behind Pacha Cover:
 * **Mahek Fathima** — Backend & AI Integration
 * **Abdulla Khan** — Frontend Developer
 * **Misbah Anjum G** — Frontend Developer
+---
+
+*Built with 💚 for Bengaluru — India's Garden City*
+
+---
+
