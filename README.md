@@ -26,7 +26,7 @@ Pacha Cover uses satellite data, AI, and citizen science to identify urban heat 
 └─────────┼────────────────┼─────────────┼─────────────┼──────────┘
           │                │             │             │
      ┌────▼───┐      ┌─────▼────┐  ┌────▼─────┐ ┌────▼──────┐
-     │ Google │      │  Gemini  │  │Firestore │ │ Vertex AI │
+     │ Google │      │  Gemini  │  │Firestore │ │ Gemini AI │
      │ Earth  │      │  1.5 Pro │  │(NoSQL DB)│ │  Vision   │
      │ Engine │      │  (AI)    │  │          │ │  + GCS    │
      └────────┘      └──────────┘  └──────────┘ └───────────┘
